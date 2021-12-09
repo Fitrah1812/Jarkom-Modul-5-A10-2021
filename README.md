@@ -441,3 +441,30 @@ kemudain coba ping ke google.com
 
 
 ### 6. Karena kita memiliki 2 Web Server, Luffy ingin Guanhao disetting sehingga setiap request dari client yang mengakses DNS Server akan didistribusikan secara bergantian pada Jorge dan Maingate
+#### Buat Jorge dan Maingate menjadi Web Server
+```
+apt-get install apache2 -y  
+
+cd /var/www/html  
+
+rm index.html  
+
+nano index.html  
+```
+Isikan apa saja pada index.html. Lalu lakukan restart dengan command ```service apache2 restart```.  
+
+#### iptables pada Guanhao
+```
+iptables -A PREROUTING -t nat -p tcp -d 10.4.7.128/29 -m statistic --mode nth --every 2 --packet 0 -j DNAT --to-destination  10.4.7.138  
+
+iptables -A PREROUTING -t nat -p tcp -d 10.4.7.128/29 -j DNAT --to-destination 10.4.7.139  
+
+iptables -t nat -A POSTROUTING -p tcp -d 10.4.7.138 -j SNAT --to-source 10.4.7.128  
+
+iptables -t nat -A POSTROUTING -p tcp -d 10.4.7.139 -j SNAT --to-source 10.4.7.128  
+```  
+
+#### Testing
+Gunakan command ```curl 10.4.7.128``` pada klien Elena atau Fukurou dua kali atau lebih. Nanti akan mengeluarkan isi dari index.html pada Jorge dan Maingate secara bergantian.  
+![testelena](https://imgur.com/MMHiO0d.png)
+![testfukurou](https://imgur.com/8kBczQM.png)
